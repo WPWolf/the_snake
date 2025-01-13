@@ -48,7 +48,6 @@ class GameObject:
 
     def draw(self: object) -> None:
         """Метод отрисовки объектов"""
-        # raise NotImplementedError
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
@@ -89,8 +88,6 @@ class Snake(GameObject):
     """Класс 'Snake' наследуется от основного"""
 
     def __init__(self) -> None:
-        # super().__init__()
-        # self.body_color = SNAKE_COLOR
         self.reset()
 
     @staticmethod
