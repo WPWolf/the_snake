@@ -48,9 +48,7 @@ class GameObject:
 
     def draw(self: object) -> None:
         """Метод отрисовки объектов"""
-        rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(screen, self.body_color, rect)
-        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
+        raise NotImplementedError
 
 
 class Apple(GameObject):
@@ -63,25 +61,23 @@ class Apple(GameObject):
 
     def draw(self: object) -> None:
         """Метод отрисовки объекта класса 'Apple' на экране"""
-        super().draw()
+        rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+        pygame.draw.rect(screen, self.body_color, rect)
+        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
     @staticmethod
     def randomize_position(snake_pos: list[tuple] = None) -> tuple:
         """
         Статичный метод для рандомизации нового
         местоположения объекта 'Apple' на экране
-        """
+        """        
         while True:
             position = (((randint(0, (SCREEN_HEIGHT - GRID_SIZE)
-                                  // GRID_SIZE)) * GRID_SIZE),
+                                // GRID_SIZE)) * GRID_SIZE),
                         ((randint(0, (SCREEN_HEIGHT - GRID_SIZE)
-                                  // GRID_SIZE)) * GRID_SIZE))
-            if snake_pos:
-                if position not in snake_pos:
-                    break
-            else:
-                break
-        return position
+                                // GRID_SIZE)) * GRID_SIZE))
+            if not snake_pos or position not in snake_pos:
+                return position
 
 
 class Snake(GameObject):
@@ -90,13 +86,13 @@ class Snake(GameObject):
     def __init__(self) -> None:
         self.reset()
 
-    @staticmethod
-    def get_head_position(position: list[tuple]) -> tuple:
+    @property
+    def get_head_position(self: object) -> tuple:
         """
         Статичный метод для определения текущего
         положения головы 'змеи' на экране
         """
-        return position[0]
+        return self.positions[0]
 
     @property
     def update_direction(self: object) -> tuple:
@@ -111,9 +107,8 @@ class Snake(GameObject):
         self.direction = self.update_direction
         self.length = 1
         self.last = None
-        # Очистка игрового поля при начале новой игры
-        pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR,
-                         ((0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT)))
+        # Очистка игрового поля при начале новой игры.
+        screen.fill(BOARD_BACKGROUND_COLOR)
 
     def draw(self: object) -> None:
         """Метод для отрисовки объекта класса 'Snake' на экране"""
@@ -123,42 +118,34 @@ class Snake(GameObject):
                 pygame.draw.rect(screen, self.body_color, rect)
                 pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-            # Отрисовка головы змейки
-            super().draw()
+            # Отрисовка головы змейки.
+            rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+            pygame.draw.rect(screen, self.body_color, rect)
+            pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        # Затирание последнего сегмента
+        # Затирание последнего сегмента.
         if self.last:
             last_rect = pygame.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
 
-    def move(self: object, head_pos: tuple, apple_pos: tuple) -> None:
+    def move(self: object) -> None:
         """Метод обновляет позицию объекта класса 'Snake'"""
-        # Оси абцисс и ординат для определения координат головы
-        x = head_pos[0] + (self.direction[0] * GRID_SIZE)
-        y = head_pos[1] + (self.direction[1] * GRID_SIZE)
-        if x < 0:
-            x += SCREEN_WIDTH
-        elif x >= SCREEN_WIDTH:
-            x -= SCREEN_WIDTH
-
-        if y < 0:
-            y += SCREEN_HEIGHT
-        elif y >= SCREEN_HEIGHT:
-            y -= SCREEN_HEIGHT
-
-        head_pos = (x, y)
-        if head_pos == apple_pos:
-            self.positions.insert(0, head_pos)
-            self.last = None
-            self.length += 1
-
-        elif head_pos in self.positions:
+        # Оси абцисс и ординат для определения координат головы.
+        x = ((self.get_head_position[0] + (self.direction[0] * GRID_SIZE))
+             % SCREEN_WIDTH)
+        y = ((self.get_head_position[1] + (self.direction[1] * GRID_SIZE))
+             % SCREEN_HEIGHT)
+        # Проверка столкновения головы с телом змейки.
+        if (x, y) in self.positions:
             self.reset()
-
         else:
-            self.positions.insert(0, head_pos)
-            self.last = self.positions[self.length]
-            self.positions.pop(self.length)
+            self.positions.insert(0, (x, y))
+            # Проверка увеличения длины змейки.
+            if self.length == len(self.positions):
+                self.last = None
+            else:
+                self.last = self.positions[self.length]
+                self.positions.pop(self.length)
 
 
 def handle_keys(game_object: object) -> None:
@@ -192,20 +179,22 @@ def main() -> None:
     """Основная функция кода"""
     # Инициализация PyGame:
     pygame.init()
-    # Тут нужно создать экземпляры классов.
-    apple = Apple()
+    # Экземпляры классов.
     snake = Snake()
+    apple = Apple()
 
     while True:
         clock.tick(SPEED)
         apple.draw()
-        snake.position = snake.get_head_position(snake.positions)
+        snake.position = snake.get_head_position
         snake.draw()
         pygame.display.update()
         handle_keys(snake)
-        snake.move(snake.position, apple.position)
         if snake.position == apple.position:
             apple.position = apple.randomize_position(snake.positions)
+            snake.length += 1
+
+        snake.move()
 
 
 if __name__ == '__main__':
