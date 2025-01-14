@@ -66,7 +66,7 @@ class Apple(GameObject):
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
     @staticmethod
-    def randomize_position(snake_pos: list[tuple] = None) -> tuple:
+    def randomize_position(snake_pos: list[tuple] = []) -> tuple:
         """
         Статичный метод для рандомизации нового
         местоположения объекта 'Apple' на экране
@@ -76,7 +76,7 @@ class Apple(GameObject):
                          // GRID_SIZE)) * GRID_SIZE),
                         ((randint(0, (SCREEN_HEIGHT - GRID_SIZE)
                          // GRID_SIZE)) * GRID_SIZE))
-            if not snake_pos or position not in snake_pos:
+            if position not in snake_pos:
                 return position
 
 
