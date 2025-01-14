@@ -70,12 +70,12 @@ class Apple(GameObject):
         """
         Статичный метод для рандомизации нового
         местоположения объекта 'Apple' на экране
-        """        
+        """
         while True:
             position = (((randint(0, (SCREEN_HEIGHT - GRID_SIZE)
-                                // GRID_SIZE)) * GRID_SIZE),
+                         // GRID_SIZE)) * GRID_SIZE),
                         ((randint(0, (SCREEN_HEIGHT - GRID_SIZE)
-                                // GRID_SIZE)) * GRID_SIZE))
+                         // GRID_SIZE)) * GRID_SIZE))
             if not snake_pos or position not in snake_pos:
                 return position
 
