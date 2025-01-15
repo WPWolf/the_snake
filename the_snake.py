@@ -50,10 +50,6 @@ class GameObject:
         """Абстрактный метод отрисовки объектов"""
         raise NotImplementedError
 
-    def draw_cell(self: object) -> None:
-        """Метод отрисовки объектов"""
-        pass
-
 
 class Apple(GameObject):
     """Класс 'Apple' наследуется от основного"""
