@@ -47,8 +47,12 @@ class GameObject:
         self.body_color = None
 
     def draw(self: object) -> None:
-        """Метод отрисовки объектов"""
+        """Абстрактный метод отрисовки объектов"""
         raise NotImplementedError
+
+    def draw_cell(self: object) -> None:
+        """Метод отрисовки объектов"""
+        pass
 
 
 class Apple(GameObject):
@@ -107,8 +111,6 @@ class Snake(GameObject):
         self.direction = self.update_direction
         self.length = 1
         self.last = None
-        # Очистка игрового поля при начале новой игры.
-        screen.fill(BOARD_BACKGROUND_COLOR)
 
     def draw(self: object) -> None:
         """Метод для отрисовки объекта класса 'Snake' на экране"""
@@ -135,17 +137,14 @@ class Snake(GameObject):
              % SCREEN_WIDTH)
         y = ((self.get_head_position[1] + (self.direction[1] * GRID_SIZE))
              % SCREEN_HEIGHT)
-        # Проверка столкновения головы с телом змейки.
-        if (x, y) in self.positions:
-            self.reset()
+
+        self.positions.insert(0, (x, y))
+        # Проверка увеличения длины змейки.
+        if self.length == len(self.positions):
+            self.last = None
         else:
-            self.positions.insert(0, (x, y))
-            # Проверка увеличения длины змейки.
-            if self.length == len(self.positions):
-                self.last = None
-            else:
-                self.last = self.positions[self.length]
-                self.positions.pop(self.length)
+            self.last = self.positions[self.length]
+            self.positions.pop(self.length)
 
 
 def handle_keys(game_object: object) -> None:
@@ -173,6 +172,8 @@ def handle_keys(game_object: object) -> None:
                 game_object.direction = RIGHT
             elif (event.key == pygame.K_ESCAPE):
                 game_object.reset()
+                # Очистка игрового поля при начале новой игры.
+                screen.fill(BOARD_BACKGROUND_COLOR)
 
 
 def main() -> None:
@@ -185,15 +186,21 @@ def main() -> None:
 
     while True:
         clock.tick(SPEED)
-        apple.draw()
         snake.position = snake.get_head_position
-        snake.draw()
-        pygame.display.update()
-        handle_keys(snake)
+        # Проверка столкновения головы змейки с телом
+        if snake.position in snake.positions[1:]:
+            snake.reset()
+            screen.fill(BOARD_BACKGROUND_COLOR)
+        # Проверка нахождения яблока
         if snake.position == apple.position:
             apple.position = apple.randomize_position(snake.positions)
             snake.length += 1
-
+        # Отрисовка объектов
+        apple.draw()
+        snake.draw()
+        pygame.display.update()
+        # Движение змейки
+        handle_keys(snake)
         snake.move()
 
 
